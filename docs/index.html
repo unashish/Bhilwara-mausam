@@ -34,12 +34,19 @@ button{font:inherit;color:inherit}
 .card{background:var(--card);border-radius:16px;padding:14px}
 .hint{font-size:16px;font-weight:600;color:var(--muted);margin-bottom:10px}
 .grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px}
-.tile{height:96px;border-radius:12px;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;cursor:pointer;padding:4px;border:2px solid transparent;position:relative}
+.tile{height:118px;border-radius:12px;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;cursor:pointer;padding:4px;border:2px solid transparent;position:relative}
 .tile.yes{background:var(--yes);color:#fff}
 .tile.no{background:var(--no-bg);border-color:var(--no);color:var(--no)}
 .tile .n{font-size:14px;font-weight:600;line-height:1.15}
 .tile .a{font-size:22px;font-weight:800;line-height:1.2}
 .tile .p{font-size:15px;font-weight:600;line-height:1.1}
+.tile .tt{margin-top:4px;font-size:14px;font-weight:800;line-height:1.2;padding:2px 5px;white-space:nowrap;border-radius:6px;background:rgba(255,255,255,.18)}
+.tile.no .tt{background:#fff;color:var(--ink)}
+.tempsum{display:flex;gap:10px}
+.tempsum .card{flex:1;display:flex;align-items:center;gap:8px;padding:10px 12px}
+.tempsum .card div{display:flex;flex-direction:column;line-height:1.2}
+.tempsum small{font-size:14px;color:var(--muted);font-weight:600}
+.tempsum b{font-size:22px;font-weight:800}
 .tile.mine{outline:3px solid var(--ink);outline-offset:2px}
 .tile .bell{position:absolute;top:4px;right:4px;width:20px;height:20px;border-radius:10px;background:var(--warn-bg);border:1.5px solid var(--warn-line);display:flex;align-items:center;justify-content:center}
 .legend{display:flex;flex-direction:column;gap:10px}
@@ -161,8 +168,16 @@ function renderMap(){
     var f = t.days[day.index], yes = f.rain;
     return '<button class="tile '+(yes?'yes':'no')+(t.id===mine?' mine':'')+'" data-t="'+esc(t.id)+'" style="grid-row:'+t.row+';grid-column:'+t.col+'" aria-label="'+esc(t.name)+': '+(yes?'बारिश होगी':'बारिश नहीं')+', '+f.chance+'%'+(f.alerts.length?', चेतावनी':'')+'">'
       + (f.alerts.length ? '<span class="bell">'+ICON.bell+'</span>' : '')
-      + '<span class="n">'+esc(t.name)+'</span><span class="a">'+(yes?'हाँ':'नहीं')+'</span><span class="p">'+f.chance+'%</span></button>';
+      + '<span class="n">'+esc(t.name)+'</span><span class="a">'+(yes?'हाँ':'नहीं')+'</span><span class="p">'+f.chance+'%</span>'
+      + (f.tmax==null ? '' : '<span class="tt">'+f.tmax+'°/'+f.tmin+'°</span>')
+      + '</button>';
   }).join('');
+  var highs = data.tehsils.map(function(t){return t.days[day.index].tmax;}).filter(function(v){return v!=null;});
+  var lows = data.tehsils.map(function(t){return t.days[day.index].tmin;}).filter(function(v){return v!=null;});
+  function span(a){ var lo=Math.min.apply(null,a), hi=Math.max.apply(null,a); return lo===hi ? lo+'°' : lo+'–'+hi+'°'; }
+  var tempHtml = highs.length ? '<div class="tempsum">'
+    + '<div class="card">'+ICON.sun+'<div><small>दिन में</small><b>'+span(highs)+'</b></div></div>'
+    + '<div class="card">'+ICON.moon+'<div><small>रात में</small><b>'+span(lows)+'</b></div></div></div>' : '';
   var alerted = data.tehsils.filter(function(t){return t.days[day.index].alerts.length;});
   var alertHtml = '';
   if (alerted.length){
@@ -176,11 +191,13 @@ function renderMap(){
     + staleBanner()
     + '<h1 class="q">'+esc(day.label)+' बारिश होगी?</h1>'
     + chips()
+    + tempHtml
     + alertHtml
     + '<section class="card" aria-label="तहसील का नक्शा"><div class="hint">अपनी तहसील पर दबाएँ</div><div class="grid">'+tiles+'</div></section>'
     + '<section class="card legend" aria-label="रंगों का मतलब">'
     +   '<div class="lg"><span class="sw yes">हाँ</span>बारिश होगी — '+data.rules.yes_threshold_pct+'% या ज़्यादा मौका</div>'
     +   '<div class="lg"><span class="sw no">नहीं</span>बारिश नहीं — '+data.rules.yes_threshold_pct+'% से कम मौका</div>'
+    +   '<div class="lg"><span class="sw" style="width:auto;padding:0 6px;background:#fff;border:2px solid #C9CFCB;font-size:14px;white-space:nowrap">35°/24°</span>दिन / रात का तापमान</div>'
     + '</section>'
     + footer();
 
@@ -190,6 +207,7 @@ function renderMap(){
     var yesNames = data.tehsils.filter(function(t){return t.days[day.index].rain;}).map(function(t){return t.name;});
     var text = data.district+' जिला, '+day.label+'। ';
     text += yesNames.length ? (data.tehsils.length+' में से '+yesNames.length+' तहसीलों में बारिश होगी: '+yesNames.join(', ')+'।') : 'किसी भी तहसील में बारिश नहीं होगी।';
+    if (highs.length) text += ' दिन में तापमान '+span(highs).replace('–',' से ').replace('°','')+' डिग्री, रात में '+span(lows).replace('–',' से ').replace('°','')+' डिग्री रहेगा।';
     alerted.forEach(function(t){ t.days[day.index].alerts.forEach(function(a){ text += ' '+t.name+' में सावधान, '+a.title+'।'; }); });
     say(text, this);
   };
