@@ -1,0 +1,6 @@
+raw/
+raw_test/
+__pycache__/
+*.pyc
+# Built fresh by the daily job; a sample lives in tests/sample_forecast.json
+docs/forecast.json

@@ -1,0 +1,63 @@
+name: Daily forecast
+
+on:
+  schedule:
+    # 05:00 IST - uses the previous evening's 12 UTC ECMWF run
+    - cron: "17 23 * * *"
+    # 16:00 IST - uses the same day's 00 UTC ECMWF run
+    - cron: "17 10 * * *"
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+
+      - name: Install
+        run: pip install -r requirements.txt
+
+      - name: Download ECMWF data and build forecast.json
+        run: python -m pipeline.run --raw raw --out docs/forecast.json
+
+      - name: Show summary
+        run: |
+          python - <<'EOF'
+          import json
+          d = json.load(open("docs/forecast.json", encoding="utf-8"))
+          print("Model run:", d["model_run"])
+          for t in d["tehsils"]:
+              f = t["days"][0]
+              print(f'{t["name_en"]:20s} rain={f["rain"]!s:5s} chance={f["chance"]:3d}% tmax={f["tmax"]} tmin={f["tmin"]} alerts={len(f["alerts"])}')
+          EOF
+
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: docs
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4

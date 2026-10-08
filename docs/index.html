@@ -1,0 +1,276 @@
+<!doctype html>
+<html lang="hi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>भीलवाड़ा मौसम</title>
+<meta name="description" content="भीलवाड़ा जिले की हर तहसील के लिए बारिश, तापमान और चेतावनी — आसान हिंदी में।">
+<meta name="theme-color" content="#1A1F1C">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icon.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Mukta:wght@400;600;800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --yes:#1B7F3B; --no:#B71C1C; --no-bg:#FDECEA;
+  --ink:#1A1F1C; --muted:#4A524D; --line:#E3E7E4; --ground:#F3F5F3; --card:#FFFFFF;
+  --warn-bg:#FFF3DC; --warn-line:#9A5B00; --warn-ink:#4A2B00;
+}
+*{box-sizing:border-box}
+html,body{margin:0;background:var(--ground);color:var(--ink)}
+body{font-family:'Mukta','Noto Sans Devanagari','Nirmala UI',sans-serif;font-size:17px;line-height:1.4}
+button{font:inherit;color:inherit}
+.wrap{max-width:480px;margin:0 auto;padding:16px 16px 32px;display:flex;flex-direction:column;gap:16px}
+.top{display:flex;justify-content:space-between;align-items:center;gap:12px}
+.title{font-size:24px;font-weight:800;line-height:1.2}
+.sub{font-size:15px;color:var(--muted)}
+.speak{min-height:52px;padding:0 16px;border-radius:26px;border:none;background:var(--ink);color:#fff;display:flex;align-items:center;gap:8px;font-weight:600;cursor:pointer;flex-shrink:0}
+.speak[aria-pressed="true"]{background:var(--yes)}
+.q{font-size:32px;font-weight:800;line-height:1.15;margin:0}
+.chips{display:flex;gap:8px;overflow-x:auto;padding-bottom:4px;scrollbar-width:none}
+.chip{min-height:44px;padding:0 16px;border-radius:22px;border:2px solid #C9CFCB;background:#fff;font-weight:600;flex-shrink:0;cursor:pointer}
+.chip[aria-pressed="true"]{background:var(--ink);border-color:var(--ink);color:#fff}
+.card{background:var(--card);border-radius:16px;padding:14px}
+.hint{font-size:16px;font-weight:600;color:var(--muted);margin-bottom:10px}
+.grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px}
+.tile{height:96px;border-radius:12px;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;cursor:pointer;padding:4px;border:2px solid transparent;position:relative}
+.tile.yes{background:var(--yes);color:#fff}
+.tile.no{background:var(--no-bg);border-color:var(--no);color:var(--no)}
+.tile .n{font-size:14px;font-weight:600;line-height:1.15}
+.tile .a{font-size:22px;font-weight:800;line-height:1.2}
+.tile .p{font-size:15px;font-weight:600;line-height:1.1}
+.tile.mine{outline:3px solid var(--ink);outline-offset:2px}
+.tile .bell{position:absolute;top:4px;right:4px;width:20px;height:20px;border-radius:10px;background:var(--warn-bg);border:1.5px solid var(--warn-line);display:flex;align-items:center;justify-content:center}
+.legend{display:flex;flex-direction:column;gap:10px}
+.lg{display:flex;align-items:center;gap:12px;font-size:16px}
+.sw{width:48px;height:32px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:800;flex-shrink:0}
+.sw.yes{background:var(--yes);color:#fff}
+.sw.no{background:var(--no-bg);border:2px solid var(--no);color:var(--no)}
+.alert{background:var(--warn-bg);border:2px solid var(--warn-line);border-radius:16px;padding:14px 16px;display:flex;gap:12px;align-items:flex-start;color:var(--warn-ink)}
+.alert b{display:block;font-size:19px;font-weight:800;line-height:1.3}
+.alert span{font-size:16px}
+.foot{font-size:13px;color:var(--muted);line-height:1.5}
+.foot a{color:var(--muted)}
+.back{min-height:44px;display:inline-flex;align-items:center;gap:6px;font-weight:600;background:none;border:none;padding:0;cursor:pointer}
+.place{display:flex;align-items:center;gap:6px}
+.place h1{font-size:28px;font-weight:800;margin:0;line-height:1.2}
+.big{border-radius:20px;padding:20px;display:flex;flex-direction:column;gap:12px}
+.big.yes{background:var(--yes);color:#fff}
+.big.no{background:var(--no-bg);color:var(--no);border:2px solid var(--no)}
+.big .lbl{font-size:20px;font-weight:600}
+.big .ans{font-size:50px;font-weight:800;line-height:1}
+.big .pct{font-size:22px;font-weight:800}
+.drops{display:flex;gap:3px;flex-wrap:wrap}
+.more{background:rgba(0,0,0,.18);border-radius:12px;padding:12px 14px;font-size:18px;line-height:1.4}
+.big.no .more{background:rgba(183,28,28,.08)}
+.temps{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.temp .h{display:flex;align-items:center;gap:6px;font-size:16px;font-weight:600;color:var(--muted)}
+.temp .v{font-size:40px;font-weight:800;line-height:1.1}
+.week h2{font-size:20px;font-weight:800;margin:0 0 6px}
+.row{display:flex;align-items:center;gap:10px;min-height:58px;border-top:1px solid var(--line);width:100%;background:none;border-left:0;border-right:0;border-bottom:0;padding:4px 0;text-align:left;cursor:pointer}
+.row[aria-current="true"]{background:#EEF2EF}
+.row .d{width:80px;flex-shrink:0;display:flex;flex-direction:column;line-height:1.2}
+.row .d b{font-size:17px}.row .d small{font-size:14px;color:var(--muted)}
+.pill{width:58px;height:34px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-weight:800;flex-shrink:0}
+.pill.yes{background:var(--yes);color:#fff}
+.pill.no{background:var(--no-bg);border:2px solid var(--no);color:var(--no)}
+.row .m{flex:1;min-width:0;display:flex;flex-direction:column;line-height:1.2}
+.row .m b{font-size:17px;font-weight:600}.row .m small{font-size:14px;color:var(--muted)}
+.row .t{font-size:20px;font-weight:800}
+.msg{padding:24px;text-align:center;font-size:18px}
+.stale{background:var(--warn-bg);border:2px solid var(--warn-line);color:var(--warn-ink);border-radius:12px;padding:10px 14px;font-weight:600}
+[hidden]{display:none!important}
+</style>
+</head>
+<body>
+<main class="wrap" id="app">
+  <div class="msg" id="loading">मौसम की जानकारी आ रही है…</div>
+</main>
+
+<script>
+(function(){
+'use strict';
+var ICON = {
+  speaker:'<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 9h4l5-4v14l-5-4H4z"/><path d="M16 9a4 4 0 0 1 0 6"/><path d="M18.5 6.5a8 8 0 0 1 0 11"/></svg>',
+  back:'<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 5l-7 7 7 7"/></svg>',
+  pin:'<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 21s-7-6.5-7-12a7 7 0 0 1 14 0c0 5.5-7 12-7 12z"/><circle cx="12" cy="9" r="2.5"/></svg>',
+  warn:'<svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="#7A4700" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="flex-shrink:0"><path d="M12 3 2 20h20L12 3z"/><path d="M12 10v4"/><path d="M12 17v.5"/></svg>',
+  bell:'<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#7A4700" stroke-width="3" stroke-linecap="round" aria-hidden="true"><path d="M12 6v8"/><path d="M12 18v.5"/></svg>',
+  sun:'<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#9A5B00" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M2 12h2M20 12h2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>',
+  moon:'<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#3B4A8C" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 14.5A8 8 0 1 1 9.5 4a6.5 6.5 0 0 0 10.5 10.5z"/></svg>',
+  drop:function(full,color){return '<svg width="26" height="26" viewBox="0 0 24 24" aria-hidden="true" fill="'+(full?color:'none')+'" stroke="'+color+'" stroke-opacity="'+(full?1:0.6)+'" stroke-width="1.5" stroke-linejoin="round"><path d="M12 3c-3 4-6 7.5-6 11a6 6 0 0 0 12 0c0-3.5-3-7-6-11z"/></svg>';}
+};
+
+var app = document.getElementById('app');
+var state = { data:null, days:[], day:0, tehsil:null, speaking:false };
+
+function esc(s){return String(s==null?'':s).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];});}
+function store(k,v){try{ if(v===undefined) return localStorage.getItem(k); localStorage.setItem(k,v);}catch(e){return null;}}
+
+// Today's date in India, as YYYY-MM-DD.
+function todayIST(){
+  var now = new Date(Date.now() + (330 + new Date().getTimezoneOffset()) * 60000);
+  var m = now.getMonth()+1, d = now.getDate();
+  return now.getFullYear()+'-'+(m<10?'0':'')+m+'-'+(d<10?'0':'')+d;
+}
+function addDays(iso,n){var t=new Date(iso+'T00:00:00Z');t.setUTCDate(t.getUTCDate()+n);return t.toISOString().slice(0,10);}
+
+// Days still ahead (drops days already past if the file is old).
+function visibleDays(data){
+  var today = todayIST(), tomorrow = addDays(today,1), out=[];
+  data.days.forEach(function(d,i){
+    if (d.date < today) return;
+    var label = d.date===today ? 'आज' : d.date===tomorrow ? 'कल' : d.weekday_short;
+    out.push({index:i, label:label, date:d.date, date_short:d.date_short, weekday:d.weekday});
+  });
+  return out;
+}
+
+function stop(){ try{ window.speechSynthesis.cancel(); }catch(e){} state.speaking=false; }
+function say(text, btn){
+  if (!('speechSynthesis' in window)) { alert('इस फ़ोन में आवाज़ की सुविधा नहीं है।'); return; }
+  if (state.speaking){ stop(); if(btn) btn.setAttribute('aria-pressed','false'); return; }
+  var u = new SpeechSynthesisUtterance(text);
+  u.lang = 'hi-IN'; u.rate = 0.9;
+  var voices = window.speechSynthesis.getVoices();
+  for (var i=0;i<voices.length;i++){ if (/^hi/i.test(voices[i].lang)) { u.voice = voices[i]; break; } }
+  u.onend = u.onerror = function(){ state.speaking=false; if(btn) btn.setAttribute('aria-pressed','false'); };
+  state.speaking = true; if(btn) btn.setAttribute('aria-pressed','true');
+  window.speechSynthesis.speak(u);
+}
+
+function staleBanner(){
+  var hours = (Date.now() - new Date(state.data.updated).getTime())/3600000;
+  return hours > 36 ? '<div class="stale" role="status">यह जानकारी पुरानी है ('+esc(state.data.updated_text)+')। नई जानकारी जल्द आएगी।</div>' : '';
+}
+function footer(){
+  return '<div class="foot">'+esc(state.data.official_note)+'<br>आँकड़े: ECMWF IFS पूर्वानुमान, CC BY 4.0 (<a href="https://data.ecmwf.int/forecasts/" rel="noopener">data.ecmwf.int</a>) से बनाया गया। मॉडल रन: '+esc(state.data.model_run.replace('T',' ').slice(0,16))+' UTC</div>';
+}
+function speakBtn(id){ return '<button class="speak" id="'+id+'" aria-pressed="false">'+ICON.speaker+'सुनें</button>'; }
+
+function chips(){
+  return '<div class="chips" role="group" aria-label="दिन चुनें">'+state.days.map(function(d,i){
+    return '<button class="chip" data-day="'+i+'" aria-pressed="'+(i===state.day)+'">'+esc(d.label)+'</button>';
+  }).join('')+'</div>';
+}
+
+function renderMap(){
+  var data = state.data, day = state.days[state.day], mine = store('tehsil');
+  var tiles = data.tehsils.map(function(t){
+    var f = t.days[day.index], yes = f.rain;
+    return '<button class="tile '+(yes?'yes':'no')+(t.id===mine?' mine':'')+'" data-t="'+esc(t.id)+'" style="grid-row:'+t.row+';grid-column:'+t.col+'" aria-label="'+esc(t.name)+': '+(yes?'बारिश होगी':'बारिश नहीं')+', '+f.chance+'%'+(f.alerts.length?', चेतावनी':'')+'">'
+      + (f.alerts.length ? '<span class="bell">'+ICON.bell+'</span>' : '')
+      + '<span class="n">'+esc(t.name)+'</span><span class="a">'+(yes?'हाँ':'नहीं')+'</span><span class="p">'+f.chance+'%</span></button>';
+  }).join('');
+  var alerted = data.tehsils.filter(function(t){return t.days[day.index].alerts.length;});
+  var alertHtml = '';
+  if (alerted.length){
+    var groups = {};
+    alerted.forEach(function(t){ t.days[day.index].alerts.forEach(function(a){ (groups[a.key]=groups[a.key]||{a:a,names:[]}).names.push(t.name); }); });
+    alertHtml = Object.keys(groups).map(function(k){var g=groups[k];
+      return '<div class="alert" role="alert">'+ICON.warn+'<div><b>'+esc(g.a.title)+'</b><span>'+esc(g.names.join(', '))+'। '+esc(g.a.advice)+'</span></div></div>';}).join('');
+  }
+  app.innerHTML =
+    '<div class="top"><div><div class="title">'+esc(data.district)+' मौसम</div><div class="sub">'+esc(data.updated_text)+'</div></div>'+speakBtn('speakMap')+'</div>'
+    + staleBanner()
+    + '<h1 class="q">'+esc(day.label)+' बारिश होगी?</h1>'
+    + chips()
+    + alertHtml
+    + '<section class="card" aria-label="तहसील का नक्शा"><div class="hint">अपनी तहसील पर दबाएँ</div><div class="grid">'+tiles+'</div></section>'
+    + '<section class="card legend" aria-label="रंगों का मतलब">'
+    +   '<div class="lg"><span class="sw yes">हाँ</span>बारिश होगी — '+data.rules.yes_threshold_pct+'% या ज़्यादा मौका</div>'
+    +   '<div class="lg"><span class="sw no">नहीं</span>बारिश नहीं — '+data.rules.yes_threshold_pct+'% से कम मौका</div>'
+    + '</section>'
+    + footer();
+
+  app.querySelectorAll('.tile').forEach(function(b){ b.onclick=function(){ openTehsil(b.getAttribute('data-t')); }; });
+  bindChips(renderMap);
+  document.getElementById('speakMap').onclick = function(){
+    var yesNames = data.tehsils.filter(function(t){return t.days[day.index].rain;}).map(function(t){return t.name;});
+    var text = data.district+' जिला, '+day.label+'। ';
+    text += yesNames.length ? (data.tehsils.length+' में से '+yesNames.length+' तहसीलों में बारिश होगी: '+yesNames.join(', ')+'।') : 'किसी भी तहसील में बारिश नहीं होगी।';
+    alerted.forEach(function(t){ t.days[day.index].alerts.forEach(function(a){ text += ' '+t.name+' में सावधान, '+a.title+'।'; }); });
+    say(text, this);
+  };
+}
+
+function renderTehsil(){
+  var data = state.data, t = state.tehsil, day = state.days[state.day], f = t.days[day.index], yes = f.rain;
+  var color = yes ? '#FFFFFF' : getComputedStyle(document.documentElement).getPropertyValue('--no').trim();
+  var drops = ''; var n = Math.round(f.chance/10);
+  for (var i=0;i<10;i++) drops += ICON.drop(i<n, color);
+  var more = '';
+  if (f.amount_word && yes) more += '<div><b>कितनी:</b> '+esc(f.amount_word)+' ('+esc(f.amount_text)+')</div>';
+  if (f.when && yes) more += '<div><b>कब:</b> '+esc(f.when)+'</div>';
+  var alerts = f.alerts.map(function(a){ return '<div class="alert" role="alert">'+ICON.warn+'<div><b>सावधान: '+esc(a.title)+'</b><span>'+esc(a.advice)+'</span></div></div>'; }).join('');
+  var rows = state.days.map(function(d,i){
+    var x = t.days[d.index];
+    return '<button class="row" data-day="'+i+'" aria-current="'+(i===state.day)+'">'
+      + '<span class="d"><b>'+esc(d.label)+'</b><small>'+esc(d.date_short)+'</small></span>'
+      + '<span class="pill '+(x.rain?'yes':'no')+'">'+(x.rain?'हाँ':'नहीं')+'</span>'
+      + '<span class="m"><b>'+x.chance+'% मौका</b><small>'+esc(x.rain ? (x.amount_word||'') : 'सूखा')+(x.alerts.length?' · चेतावनी':'')+'</small></span>'
+      + '<span class="t">'+(x.tmax==null?'':x.tmax+'°')+'</span></button>';
+  }).join('');
+
+  app.innerHTML =
+    '<div class="top"><button class="back" id="back">'+ICON.back+'सभी तहसील</button>'+speakBtn('speakT')+'</div>'
+    + staleBanner()
+    + '<div><div class="place">'+ICON.pin+'<h1>'+esc(t.name)+' तहसील</h1></div><div class="sub">'+(day.label==='आज'||day.label==='कल' ? esc(day.label)+', ' : '')+esc(day.weekday)+' '+esc(day.date_short)+'</div></div>'
+    + chips()
+    + '<section class="big '+(yes?'yes':'no')+'" aria-live="polite">'
+    +   '<div class="lbl">'+esc(day.label)+' बारिश?</div>'
+    +   '<div class="ans">'+(yes?'हाँ, होगी':'नहीं')+'</div>'
+    +   '<div class="drops" aria-hidden="true">'+drops+'</div>'
+    +   '<div class="pct">बारिश का मौका: '+f.chance+'%</div>'
+    +   (more ? '<div class="more">'+more+'</div>' : '')
+    + '</section>'
+    + (f.tmax==null ? '' :
+      '<div class="temps"><div class="card temp"><div class="h">'+ICON.sun+'दिन में</div><div class="v">'+f.tmax+'°</div></div>'
+      + '<div class="card temp"><div class="h">'+ICON.moon+'रात में</div><div class="v">'+f.tmin+'°</div></div></div>')
+    + alerts
+    + '<section class="card week"><h2>अगले '+state.days.length+' दिन</h2>'+rows+'</section>'
+    + footer();
+
+  document.getElementById('back').onclick = function(){ stop(); location.hash=''; };
+  document.getElementById('speakT').onclick = function(){ say(f.speech.replace(/^[^,]+, [^।]+।/, t.name+', '+day.label+'।'), this); };
+  bindChips(renderTehsil);
+  app.querySelectorAll('.row').forEach(function(b){ b.onclick=function(){ stop(); state.day=+b.getAttribute('data-day'); renderTehsil(); window.scrollTo(0,0); }; });
+}
+
+function bindChips(rerender){
+  app.querySelectorAll('.chip').forEach(function(b){ b.onclick=function(){ stop(); state.day=+b.getAttribute('data-day'); rerender(); }; });
+}
+
+function openTehsil(id){ store('tehsil', id); location.hash = 't='+encodeURIComponent(id); }
+
+function route(){
+  stop();
+  if (!state.data) return;
+  var m = /^#t=(.+)$/.exec(location.hash);
+  var t = m && state.data.tehsils.filter(function(x){return x.id===decodeURIComponent(m[1]);})[0];
+  state.tehsil = t || null;
+  if (t) renderTehsil(); else renderMap();
+  window.scrollTo(0,0);
+}
+
+function showError(){
+  app.innerHTML = '<div class="msg">मौसम की जानकारी नहीं मिल पाई। इंटरनेट जाँचकर फिर खोलें।</div>';
+}
+
+fetch('forecast.json', {cache:'no-cache'}).then(function(r){ if(!r.ok) throw new Error(r.status); return r.json(); })
+  .then(function(data){
+    state.data = data;
+    state.days = visibleDays(data);
+    if (!state.days.length) state.days = visibleDays({days:data.days.map(function(d){return Object.assign({},d,{date:'9999-12-31'});})});
+    state.day = 0;
+    window.addEventListener('hashchange', route);
+    route();
+  }).catch(showError);
+
+if ('serviceWorker' in navigator) { navigator.serviceWorker.register('sw.js').catch(function(){}); }
+if ('speechSynthesis' in window) { try{ window.speechSynthesis.getVoices(); }catch(e){} }
+})();
+</script>
+</body>
+</html>
